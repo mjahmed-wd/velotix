@@ -14,7 +14,7 @@ const InputField = (props: Props) => {
 
 
     return (
-        <div>
+        <div className='mt-2 mb-2'>
             <label>{label}</label>
             <Field name={name} type={type} validate={validate} className="form-control" {...rest} />
 
