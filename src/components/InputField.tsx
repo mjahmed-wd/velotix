@@ -5,17 +5,18 @@ type Props = {
     validate?: (value: string) => string,
     name: string,
     type: string,
-    label?: string
+    label?: string,
+    [x: string]: any
 }
 
 const InputField = (props: Props) => {
-    const { validate = () => "", name, type = "text", label = "" } = props
+    const { validate = () => "", name, type = "text", label = "", ...rest } = props
 
 
     return (
         <div>
-            <label>{name}</label>
-            <Field name={name} type={type} validate={validate} className="form-control" />
+            <label>{label}</label>
+            <Field name={name} type={type} validate={validate} className="form-control" {...rest} />
 
             <ErrorMessage name={name} render={msg => <p className="text-danger font-size-sm">{msg}</p>} />
 

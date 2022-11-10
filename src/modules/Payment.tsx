@@ -16,32 +16,83 @@ const luhnFormulaCheck = (value: string): boolean => {
 
     const sumOfAllNumb = subtractOverNine.reduce((acc, crr) => acc + crr, 0)
 
-    const isValidLuhn = sumOfAllNumb % 10 === parseInt(lastDigit)
+    const isValidLuhn = sumOfAllNumb % 10 === +lastDigit
 
     return isValidLuhn;
 
 }
 
-const isValidMasterCard = (value: string) => {
-    return true
+const luhnCheck = (value: string) => {
+    let checksum = 0; // running checksum total
+    let j = 1; // takes value of 1 or 2
+
+    // Process each digit one by one starting from the last
+    for (let i = value.length - 1; i >= 0; i--) {
+        let calc = 0;
+        // Extract the next digit and multiply by 1 or 2 on alternative digits.
+        calc = Number(value.charAt(i)) * j;
+
+        // If the result is in two digits add 1 to the checksum total
+        if (calc > 9) {
+            checksum = checksum + 1;
+            calc = calc - 10;
+        }
+
+        // Add the units element to the checksum total
+        checksum = checksum + calc;
+
+        // Switch the value of j
+        if (j === 1) {
+            j = 2;
+        } else {
+            j = 1;
+        }
+    }
+
+    //Check if it is divisible by 10 or not.
+    return (checksum % 10) == 0;
 }
 
-const isValidVisaCard = (value: string) => {
-    return true
+const isValidMasterCard = (value: string) => {
+    const cardNumber = value.toString()
+    const length = cardNumber.length;
+
+    if (length !== 16) {
+        return false;
+    }
+
+    const [firstD, secondD, thirdD, fourthD, fifthD, sixthD] = cardNumber.split("")
+    const firstTwoDigit = [firstD, secondD].join("")
+    const firstSixDigit = [firstD, secondD, thirdD, fourthD, fifthD, sixthD].join("")
+
+    let isMatchFirstDigits = false
+    if (55 >= +firstTwoDigit && +firstTwoDigit >= 51) {
+        isMatchFirstDigits = true;
+    }
+    if (272099 >= +firstSixDigit && +firstSixDigit >= 222100) {
+        isMatchFirstDigits = true;
+    }
+
+    return isMatchFirstDigits
 }
+
 
 const validateCreditCard = (value: string) => {
     let error = "";
     if (!value) {
-        error = 'Required';
+        return error = 'Required';
     }
-    else if (!luhnFormulaCheck(value)) {
-        error = 'Invalid Card Number';
+    if (!luhnCheck(value)) {
+        return error = 'Invalid Card Number';
     }
 
-    if (isValidMasterCard(value) || isValidVisaCard(value)) {
-        error = ""
+    const visaRegEx = /^4[0-9]{12}(?:[0-9]{3}){0,2}$/;
+    const mastercardRegEx = /^(5[1-5][0-9]{14}|2(22[1-9][0-9]{12}|2[3-9][0-9]{13}|[3-6][0-9]{14}|7[0-1][0-9]{13}|720[0-9]{12}))$/;
+
+    if (!visaRegEx.test(value) && !mastercardRegEx.test(value)) {
+        return error = "Not a valid master or visa card number"
     }
+
     return error;
 }
 
@@ -55,12 +106,50 @@ const validateName = (value: string) => {
     return error;
 }
 
+const validateExpirationDateMonth = (value: string) => {
+    let error = "";
+    if (!value) {
+        error = 'Required';
+    } else if (+value < 1) {
+        error = 'Invalid Month Number';
+    }
+    else if (+value > 12) {
+        error = 'Invalid Month Number';
+    }
+    return error;
+}
+
+const validateExpirationDateYear = (value: string) => {
+    const currentYear = new Date().getFullYear()
+    let error = "";
+    if (!value) {
+        error = 'Required';
+    } else if (+value < currentYear) {
+        error = 'Your card is expired';
+    }
+    else if (+value > (currentYear + 25)) {
+        error = 'Please check the card validity again';
+    }
+    return error;
+}
+
+const validateCvvCode = (value: string) => {
+    const cvvRegex = /^[0-9]{3,4}$/;
+    let error = "";
+    if (!value) {
+        error = 'Required';
+    } else if (cvvRegex.test(value) || value.length > 4) {
+        error = 'Invalid CVV';
+    }
+    return error;
+}
+
 const validateNumber = (value: string) => {
     let error = "";
     if (!value) {
         error = 'Required';
-    } else if (isNaN(parseInt(value))) {
-        error = 'Invalid number';
+    } else if (+value <= 0) {
+        error = 'Please enter a number';
     }
     return error;
 }
@@ -75,7 +164,8 @@ const Payment = (props: Props) => {
             <Formik
                 initialValues={{
                     creditCardNo: '',
-                    expirationDate: '',
+                    expirationDateMonth: '',
+                    expirationDateYear: '',
                     cvvCode: '',
                     firstName: '',
                     lastName: '',
@@ -91,9 +181,13 @@ const Payment = (props: Props) => {
 
                         <InputField name="creditCardNo" validate={validateCreditCard} type="string" />
 
-                        <InputField name="expirationDate" validate={validateNumber} type="number" />
+                        <div className="d-flex">
+                            <InputField name="expirationDateMonth" validate={validateExpirationDateMonth} type="number" min={1} max={12} />
 
-                        <InputField name="cvvCode" validate={validateNumber} type="number" />
+                            <InputField name="expirationDateYear" validate={validateExpirationDateYear} type="number" min={2022} max={2023} />
+                        </div>
+
+                        <InputField name="cvvCode" validate={validateCvvCode} type="number" />
 
                         <InputField name="firstName" validate={validateName} type="text" />
 
