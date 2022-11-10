@@ -2,6 +2,48 @@ import React from 'react'
 import { Formik, Form } from 'formik';
 import InputField from '../components/InputField';
 
+const luhnFormulaCheck = (value: string): boolean => {
+
+    const originalNumbers = value.toString().split("")
+    const duplicateArr = [...originalNumbers]
+    const [lastDigit] = duplicateArr.splice(-1)
+
+    const revNumbersExceptLast = [...duplicateArr].reverse()
+
+    const multipleOddDigitsByTwo = revNumbersExceptLast.map((number, index) => ((index + 1) % 2 === 0) ? parseInt(number) : parseInt(number) * 2)
+
+    const subtractOverNine = multipleOddDigitsByTwo.map(number => (+number > 9) ? +number - 9 : number)
+
+    const sumOfAllNumb = subtractOverNine.reduce((acc, crr) => acc + crr, 0)
+
+    const isValidLuhn = sumOfAllNumb % 10 === parseInt(lastDigit)
+
+    return isValidLuhn;
+
+}
+
+const isValidMasterCard = (value: string) => {
+    return true
+}
+
+const isValidVisaCard = (value: string) => {
+    return true
+}
+
+const validateCreditCard = (value: string) => {
+    let error = "";
+    if (!value) {
+        error = 'Required';
+    }
+    else if (!luhnFormulaCheck(value)) {
+        error = 'Invalid Card Number';
+    }
+
+    if (isValidMasterCard(value) || isValidVisaCard(value)) {
+        error = ""
+    }
+    return error;
+}
 
 const validateName = (value: string) => {
     let error = "";
@@ -47,7 +89,7 @@ const Payment = (props: Props) => {
                 {({ errors, touched, isValidating }) => (
                     <Form>
 
-                        <InputField name="creditCardNo" validate={validateNumber} type="number" />
+                        <InputField name="creditCardNo" validate={validateCreditCard} type="string" />
 
                         <InputField name="expirationDate" validate={validateNumber} type="number" />
 
