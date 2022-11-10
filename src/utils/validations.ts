@@ -38,7 +38,7 @@ export const validateCreditCard = (value: string) => {
     return (error = "Invalid Card Number");
   }
 
-  const visaRegEx = /^4[0-9]{12}(?:[0-9]{3}){0,2}$/;
+  const visaRegEx = /^4[0-9]{12}(?:[0-9]{3})(?:[0-9]{3})?$/;
   const mastercardRegEx =
     /^(5[1-5][0-9]{14}|2(22[1-9][0-9]{12}|2[3-9][0-9]{13}|[3-6][0-9]{14}|7[0-1][0-9]{13}|720[0-9]{12}))$/;
 
